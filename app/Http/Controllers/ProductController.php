@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+//use Psy\Util\Str;
+use Illuminate\Support\Str;
+
 class ProductController extends Controller
 {
     private $product;
@@ -45,13 +49,28 @@ class ProductController extends Controller
 //            ]
   );
 
-        $data = $request->product->create([
-            'name' => $request->name,
-            'image' => $request->image,
-            'price' => $request->price,
-        ]);
+//        $data = $request->product->create([
+//            'name' => $request->name,
+//            'image' => $request->image,
+//            'price' => $request->price,
+//        ]);
+//
+//        $data->save();
 
-        $data->save();
+        try {
+            $imageName = Str::random().'.'.$request->image->getClientOriginalExtension();
+            Storage::disk('public')->putFileAs('product/image', $request->image, $imageName);
+            Product::create($request->post()+['image'=>$imageName]);
+            return response()->json([
+                'message'=>'Product Created Successfully!!'
+            ]);
+        }catch (\Exception $e){
+            \Log::error($e->getMessage());
+            return response()->json([
+                'message'=>'Something goes wrong while creating a product!!'
+            ],500);
+        }
+
     }
 
 
