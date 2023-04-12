@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-//use Psy\Util\Str;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -98,7 +97,36 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'image' => 'nullable',
+            'price' => 'required',
+        ]);
+
+        try {
+            $product->fill($request->post())->update();
+            if ($request->hasFile('image')) {
+                if ($product->image) {
+                    $exists = Storage::disk('public')->exists("product/image/{$product->image}");
+                    if ($exists) {
+                        Storage::disk('public')->delete("product/image/{$product->image}");
+
+                    }
+                }
+                $imageName = Str::random() . '.' . $request->image->getClientOriginalExtension();
+                Storage::disk('public')->putFileAs('product/image',$request->image,$imageName);
+                $product->image = $imageName;
+                $product->save();
+            }
+            return response()->json([
+                'message' => 'Product Updated Successfully!!'
+            ]);
+        }catch (\Exception $e){
+            \Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Something goes wrong while updating a product!!'
+            ], 500);
+        }
     }
 
     /**
