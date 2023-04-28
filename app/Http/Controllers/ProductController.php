@@ -89,7 +89,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        //
+
     }
 
     /**
@@ -99,7 +99,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|min:5|max:91',
-            'image' => 'required|image',
+            'image' => 'required|nullable',
             'price' => 'required|digits_between:4,22',
         ]);
 
